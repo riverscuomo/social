@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "social"
+version = "0.1.0"
+description = ""
+authors = ["Rivers Cuomo <riverscuomo@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tweepy = "^4.12.1"
+openai = "^0.26.1"
+rivertils = "^0.1.7"
+instagrapi = "^1.16.30"
+praw = "^7.6.1"
+rich = "^13.1.0"
+python-dateutil = "^2.8.2"
+python-dotenv = "^0.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
