@@ -16,28 +16,28 @@ You can specify custom variables to include using a `.env` file.  Alternatively,
 
 ### API Credentials
 
-OPENAI_API_KEY=
+OPENAI_API_KEY=x
 
-INSTA_USERNAME=
-INSTA_PASSWORD=
-INSTA_PK=
+INSTA_USERNAME=x
+INSTA_PASSWORD=x
+INSTA_PK=x
 
-REDDIT_CLIENT_ID=
-REDDIT_SECRET=
-REDDIT_PASSWORD=
-REDDIT_USERNAME=
+REDDIT_CLIENT_ID=x
+REDDIT_SECRET=x
+REDDIT_PASSWORD=x
+REDDIT_USERNAME=x
 
-TWITTER_APP_KEY=
-TWITTER_APP_SECRET=
-TWITTER_OAUTH_TOKEN=
-TWITTER_OAUTH_TOKEN_SECRET=
+TWITTER_APP_KEY=x
+TWITTER_APP_SECRET=x
+TWITTER_OAUTH_TOKEN=x
+TWITTER_OAUTH_TOKEN_SECRET=x
 
 ### Google Cloud Translate for Language Translation (optional)
 GOOGLE_CLOUD_PROJECT=
 GOOGLE_APPLICATION_CREDENTIALS=path_to_json_file
 
 ### The script will ignore any mentions that contain these words (comma separated)
-BADS=
+BADS=xxx,yyy,zzz
 
 ## Running
 
