@@ -16,6 +16,7 @@ You can specify custom variables to include using a `.env` file.  Alternatively,
 
 ### API Credentials
 
+```
 OPENAI_API_KEY=x
 
 INSTA_USERNAME=x
@@ -38,7 +39,7 @@ GOOGLE_APPLICATION_CREDENTIALS=path_to_json_file
 
 ### The script will ignore any mentions that contain these words (comma separated)
 BADS=xxx,yyy,zzz
-
+```
 ## Running
 
 Once you have completed all the installation steps, run `Social` script by running either:
