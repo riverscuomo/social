@@ -90,14 +90,14 @@ def finalize_response(response: str, language: str):
     Replace any names with the user's name. Translate the reponse to the user's language of choice. Append punctuation.
     """
 
-    if language and language != "en":
-        blob = TextBlob(response)
-        # print(blob)
+    # if language and language != "en":
+    #     blob = TextBlob(response)
+    #     # print(blob)
 
-        try:
-            response = blob.translate(to=language).raw
-        except Exception as e:
-            print("Couldn't do blob.translate in finalize_reponse: ", e, blob)
+    #     try:
+    #         response = blob.translate(to=language).raw
+    #     except Exception as e:
+    #         print("Couldn't do blob.translate in finalize_reponse: ", e, blob)
 
 
     # if language and language != "en":
