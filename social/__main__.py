@@ -334,7 +334,7 @@ def twitter_routine():
 
             if approved.lower() in ["i", "y"]:
 
-                # save the ids of all the tweets to a text file
+                # save the ids of the tweet to a text file
                 with open("tweet_ids.txt", "a") as f:
 
                     f.write(str(tweet.id) + "\n")
