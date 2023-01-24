@@ -40,7 +40,12 @@ else:
 
 character = input("which character do you want to use? (default is 'Rivers Cuomo from Weezer')") or "Rivers Cuomo from Weezer"
 emotion = input("what emotion do you want the bot to have? (default is 'funny')") or "funny"
-additional_prompt = input("any additional context you wish to give the bot about itself? (for example, 'You just got your shingles vaccine')") or ""
+
+# get the last context from the text file
+with open("last_context.txt", "r") as f:
+    last_context = f.read()
+
+context = input(f"any additional context you wish to give the bot about itself? (for example, '{last_context}')") or ""
 
 base_prompt = f"respond to this {platform} comment as if you are {character}. Use current slang. Make it {emotion}."
 twitter_prompts = [base_prompt]
@@ -285,6 +290,8 @@ def twitter_routine():
     with open("tweet_ids.txt", "r") as f:
         previous_tweets = f.read().splitlines()
 
+    
+
     tweets_info = twitter_v1.mentions_timeline( count=count)
 
     for i, tweet in enumerate(tweets_info , start=1):
@@ -310,7 +317,7 @@ def twitter_routine():
 
         # every 4 items, add any additional context to the prompt
         if i % 4 == 0:
-            prompt += f" Some additional context: {additional_prompt}" 
+            prompt += f" Some additional context: {context}" 
 
         reply = build_openai_response(text, prompt)   
         reply = finalize_response(reply, language)
