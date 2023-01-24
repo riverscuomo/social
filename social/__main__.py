@@ -47,6 +47,13 @@ with open("last_context.txt", "r") as f:
 
 context = input(f"any additional context you wish to give the bot about itself? (for example, '{last_context}')") or ""
 
+if context != "":
+
+    # save the ids of the tweet to a text file
+    with open("last_context.txt", "w") as f:
+
+        f.write(context)
+
 base_prompt = f"respond to this {platform} comment as if you are {character}. Use current slang. Make it {emotion}."
 twitter_prompts = [base_prompt]
 
@@ -288,9 +295,7 @@ def twitter_routine():
 
     # get the list of previous tweets from the text file
     with open("tweet_ids.txt", "r") as f:
-        previous_tweets = f.read().splitlines()
-
-    
+        previous_tweets = f.read().splitlines()    
 
     tweets_info = twitter_v1.mentions_timeline( count=count)
 
