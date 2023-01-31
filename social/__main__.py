@@ -241,7 +241,7 @@ def insta_routine():
         """
         I could get all the comments.
         Then get all the users for each comment.
-        Then sort by is verified or by follower count.
+        Then sort by is_verified or by follower count.
         """
         
         comments=client.media_comments( media.pk, amount=1)
@@ -329,7 +329,8 @@ def twitter_routine():
         # reply = "test"
         reply = f"@{username} {reply}"
         if len(reply) > 280:
-            print(f"reply too long: {len(reply)}")
+            # print(f"reply too long: {len(reply)}")
+            reply = reply[:280]
             continue
         print(f"'{reply}'")
         print("\n")
