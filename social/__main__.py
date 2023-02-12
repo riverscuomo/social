@@ -54,7 +54,7 @@ if context != "":
 
         f.write(context)
 
-base_prompt = f"respond to this {platform} comment as if you are {character}. Use current slang. Make it {emotion}."
+base_prompt = f"respond to this {platform} comment as if you are {character}. Your response should use current slang and should be {emotion}."
 twitter_prompts = [base_prompt]
 
 # will ignore any input containing these words
@@ -322,7 +322,7 @@ def twitter_routine():
 
         # every 4 items, add any additional context to the prompt
         if i % 4 == 0:
-            prompt += f" Some additional context: {context}" 
+            prompt += f" One bit of context for you: {context}. Now here is your prompt:" 
 
         reply = build_openai_response(text, prompt)   
         reply = finalize_response(reply, language)
