@@ -62,9 +62,10 @@ bads = os.environ.get("BADS").split(",")
 print("bads: ", bads)
 
 
-def build_openai_response(mention, prompt: str):
+def build_openai_response(text: str, prompt: str):
 
-    prompt = f"{prompt} : {mention}"
+    prompt = f"{prompt}.\nHere is the text I want you to respond to: '{text}'"
+    print(prompt)
 
     reply = openai.Completion.create(
         model="text-davinci-003",
@@ -79,6 +80,7 @@ def build_openai_response(mention, prompt: str):
     reply = reply.replace("2020", "2023")
     reply = reply.replace("2021", "2023")
     reply = reply.strip()
+    # print(reply)
     return reply
 
 
@@ -199,7 +201,7 @@ def reddit_routine():
         title = submission.title
         text = submission.selftext
 
-        print(title, text)
+        # print(title, text)
                 
         # submission = reddit.submission("39zje0")
         submission.comment_sort = "new"
@@ -312,7 +314,7 @@ def twitter_routine():
 
         username = tweet.user.screen_name
 
-        print(f"{i}: <@{username}> '{text}'")
+        # print(f"{i}: <@{username}> '{text}'")
 
         test_message, language = get_test_message_and_language(text)
 
@@ -322,7 +324,8 @@ def twitter_routine():
 
         # every 4 items, add any additional context to the prompt
         if i % 4 == 0:
-            prompt += f" One bit of context for you: {context}. Now here is your prompt:" 
+            prompt += f" Your response could mention the fact that {context}" 
+            # print(prompt)
 
         reply = build_openai_response(text, prompt)   
         reply = finalize_response(reply, language)
