@@ -42,7 +42,7 @@ character = input("which character do you want to use? (default is 'Rivers Cuomo
 emotion = input("what emotion do you want the bot to have? (default is 'funny')") or "funny"
 
 # get the last context from the text file
-with open("last_context.txt", "r") as f:
+with open("social/last_context.txt", "r") as f:
     last_context = f.read()
 
 context = input(f"any additional context you wish to give the bot about itself? (for example, '{last_context}')") or ""
@@ -296,7 +296,7 @@ def twitter_routine():
     twitter_v1 = tweepy.API(auth, wait_on_rate_limit=True)
 
     # get the list of previous tweets from the text file
-    with open("tweet_ids.txt", "r") as f:
+    with open("social/tweet_ids.txt", "r") as f:
         previous_tweets = f.read().splitlines()    
 
     tweets_info = twitter_v1.mentions_timeline( count=count)
