@@ -1,5 +1,6 @@
 /social/last_context.txt
 tweet_ids.txt
+last_context.txt
 
 *.json
 
