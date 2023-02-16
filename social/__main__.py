@@ -65,7 +65,7 @@ print("bads: ", bads)
 def build_openai_response(text: str, prompt: str):
 
     prompt = f"{prompt}.\nHere is the text I want you to respond to: '{text}'"
-    print(prompt)
+    # print(prompt)
 
     reply = openai.Completion.create(
         model="text-davinci-003",
@@ -314,7 +314,7 @@ def twitter_routine():
 
         username = tweet.user.screen_name
 
-        # print(f"{i}: <@{username}> '{text}'")
+        print(f"{i}: <@{username}> '{text}'")
 
         test_message, language = get_test_message_and_language(text)
 
