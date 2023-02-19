@@ -19,13 +19,13 @@ print("Running social.py")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test', "-t", action=argparse.BooleanOptionalAction)
-parser.add_argument("-c", "--count", help="number of tweets to fetch", type=int, default=25)
-parser.add_argument("-p", "--platform", help="which routine to run", type=str, choices=["twitter", "reddit", "insta"], default="twitter")
+# parser.add_argument("-c", "--count", help="number of tweets to fetch", type=int, default=25)
+parser.add_argument("-m", "--mode", help="which routine to run", type=str, choices=["twittermentions", "twittertimeline", "reddit", "insta"], default="twittermention")
 
 args = parser.parse_args()
 test = args.test
-count = args.count
-platform = args.platform
+# count = args.count
+mode = args.mode
 
 if test:
     print("TESTING MODE")
@@ -55,7 +55,7 @@ if context != "":
 
         f.write(context)
 
-base_prompt = f"respond to this {platform} comment as if you are {character}. Your response should use current slang and should be {emotion}."
+base_prompt = f"respond to this {mode} comment as if you are {character}. Your response should use current slang and should be {emotion}."
 twitter_prompts = [base_prompt]
 
 # will ignore any input containing these words
@@ -334,12 +334,12 @@ def fetch_timeline_tweets(twitter_v1):
         max_id = timeline_tweets[-1].id
         print(i, max_id, len(timeline_tweets))
 
-    timeline_tweets.sort(key=lambda x: x.retweet_count, reverse=True)
+    
     print(len(timeline_tweets))
     return timeline_tweets
 
 
-def twitter_routine():
+def twitter_routine():  # sourcery skip: raise-specific-error
 
     twitter_v1 = get_twitter_vi()
 
@@ -353,6 +353,11 @@ def twitter_routine():
     with open("social/tweet_ids.txt", "r") as f:
         previous_tweets = f.read().splitlines()    
 
+    # get the list of previous tweets from the text file
+    with open("social/bad_users.txt", "r") as f:
+        bad_users = f.read().splitlines() 
+    print("bad_users", bad_users)
+
 
     # timeline = twitter_v1.home_timeline( )
 
@@ -360,23 +365,30 @@ def twitter_routine():
     #     count=200).items():
     #     print(status.id)
 
-    timeline_tweets = test_tweets.test_tweets if test else fetch_timeline_tweets(twitter_v1)
-    # timeline_tweets = fetch_timeline_tweets(twitter_v1)
-    print(f"timeline_tweets: {len(timeline_tweets)}")
+    # timeline_tweets 
+    # # timeline_tweets = fetch_timeline_tweets(twitter_v1)
+    # print(f"timeline_tweets: {len(timeline_tweets)}")
 
 
+    if mode == "twittermentions":
+        tweets = twitter_v1.mentions_timeline(tweet_mode="extended", count=200 )
 
-    # mentions = twitter_v1.mentions_timeline( count=count)
+    elif mode == "twittertimeline":
+        tweets = test_tweets.test_tweets if test else fetch_timeline_tweets(twitter_v1)
 
-    all_tweets = timeline_tweets # + mentions
+    else:
+        raise Exception("invalid mode")
 
-    all_tweets = [x for x in all_tweets if x.id_str not in previous_tweets]
-    all_tweets = [x for x in all_tweets if not is_bad(x.full_text) ]
-    all_tweets = [x for x in all_tweets if x.favorite_count!=0 ]
+    
+    tweets = [x for x in tweets if x.id_str not in previous_tweets]
+    tweets = [x for x in tweets if not is_bad(x.full_text) ]
+    tweets = [x for x in tweets if x.favorite_count!=0 ]
+    tweets = [x for x in tweets if str(x.user.id) not in bad_users ]
+    tweets.sort(key=lambda x: x.retweet_count + x.favorite_count, reverse=True)
 
 
-    for i, tweet in enumerate(all_tweets, start=1):
-        print(tweet)
+    for i, tweet in enumerate(tweets, start=1):
+        # print(tweet)
 
         # id = tweet.id
         # if id in previous_tweets:
@@ -389,8 +401,12 @@ def twitter_routine():
         favorite_count = tweet.favorite_count
         # if retweet_count > 150 or favorite_count > 150:
         screen_name = tweet.user.screen_name
+        user_id = tweet.user.id
+        followers_count = tweet.user.followers_count
+        following_count = tweet.user.friends_count
+        followers_minus_following = followers_count - following_count
         possibly_sensitive = tweet.possibly_sensitive if hasattr(tweet, "possibly_sensitive") else False
-        log = f"{i}: {screen_name}: {text} ({retweet_count} retweets, {favorite_count} favorites)"
+        log = f"{i}: {screen_name} | {text} | (retweets: {retweet_count}, favorites: {favorite_count}, followers: {followers_minus_following}, user_id: {user_id}"
         if possibly_sensitive:
             log += " (possibly sensitive)!!!"
         print(log)
@@ -446,21 +462,24 @@ def twitter_routine():
 
             if approved.lower() in ["i", "y"]:
 
+                print('opening tweet_ids to save the id of the tweet')
+
                 # save the ids of the tweet to a text file
-                with open("tweet_ids.txt", "a") as f:
+                with open("social/tweet_ids.txt", "a") as f:
+                    print(f"writing {tweet.id} to tweet_ids.txt")
 
                     f.write(str(tweet.id) + "\n")
 
 
 
 def main():
-    print(platform)
+    print(mode)
 
-    if platform == "twitter":
+    if mode in ["twittermentions", "twittertimeline"]:
         twitter_routine()
-    elif platform == "reddit":
+    elif mode == "reddit":
         reddit_routine()
-    elif platform == "insta":
+    elif mode == "insta":
         insta_routine()
 
 
