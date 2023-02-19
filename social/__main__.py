@@ -459,6 +459,7 @@ def twitter_routine():  # sourcery skip: raise-specific-error
 
                 # post the reply to twitter
                 twitter_v1.update_status(reply, in_reply_to_status_id =tweet.id)
+                tweet.favorite()
 
             if approved.lower() in ["i", "y"]:
 
