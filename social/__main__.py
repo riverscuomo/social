@@ -1,6 +1,6 @@
 from rich import print
 from datetime import datetime, timezone
-# from convert import *
+import social.data.test_tweets as test_tweets
 from dateutil import parser  #  pip install python-dateutil --upgrade
 import os
 import tweepy
@@ -19,16 +19,17 @@ print("Running social.py")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test', "-t", action=argparse.BooleanOptionalAction)
-parser.add_argument("-c", "--count", help="number of tweets to fetch", type=int, default=25)
-parser.add_argument("-p", "--platform", help="which routine to run", type=str, choices=["twitter", "reddit", "insta"], default="twitter")
+# parser.add_argument("-c", "--count", help="number of tweets to fetch", type=int, default=25)
+parser.add_argument("-m", "--mode", help="which routine to run", type=str, choices=["twittermentions", "twittertimeline", "reddit", "insta"], default="twittermention")
 
 args = parser.parse_args()
 test = args.test
-count = args.count
-platform = args.platform
+# count = args.count
+mode = args.mode
 
 if test:
     print("TESTING MODE")
+
 else:
     print("LIVE MODE")
 
@@ -54,7 +55,7 @@ if context != "":
 
         f.write(context)
 
-base_prompt = f"respond to this {platform} comment as if you are {character}. Your response should use current slang and should be {emotion}."
+base_prompt = f"respond to this {mode} comment as if you are {character}. Your response should use current slang and should be {emotion}."
 twitter_prompts = [base_prompt]
 
 # will ignore any input containing these words
@@ -281,9 +282,29 @@ def insta_routine():
                 except Exception as e:
                     print(e)
 
+# def get_full_text(id, twitter_v1):  
+#     """ get the full text of a tweet that has been truncated for length """
 
-def twitter_routine():
+#     # get the full text of the tweet
+#     tweet = twitter_v1.get_status(id, tweet_mode="extended")
+#     text = tweet.full_text
 
+#     # # remove the url
+#     # text = text.split("https://")[0]
+
+#     # # remove the username
+#     # text = text.split("@")[0]
+
+#     # # remove the hashtag
+#     # text = text.split("#")[0]
+
+#     # # remove the newline
+#     # text = text.replace("\n", "")
+
+#     return text
+
+
+def get_twitter_vi():
     TWITTER_APP_KEY = os.environ.get("TWITTER_APP_KEY")
     TWITTER_APP_SECRET = os.environ.get("TWITTER_APP_SECRET")
 
@@ -294,27 +315,118 @@ def twitter_routine():
     auth = tweepy.OAuthHandler(TWITTER_APP_KEY, TWITTER_APP_SECRET)
     auth.set_access_token(TWITTER_OAUTH_TOKEN, TWITTER_OAUTH_TOKEN_SECRET)
     twitter_v1 = tweepy.API(auth, wait_on_rate_limit=True)
+    return twitter_v1
+
+
+def fetch_timeline_tweets(twitter_v1):
+    """ Fetches the most popular 50 among the last 800 tweets from the home timeline"""
+    timeline_tweets = []
+    # https://docs.tweepy.org/en/stable/v1_pagination.html
+    # for page in tweepy.Cursor(twitter_v1.home_timeline, tweet_mode="extended",  exclude_replies=True, include_entities=False, count=800).pages(4):
+    #     for tweet in page:
+    #         json = tweet._json
+    #         timeline_tweets.append(json)
+    timeline_tweets = twitter_v1.home_timeline(tweet_mode="extended",  exclude_replies=True, include_entities=False, count=200)    
+    max_id = timeline_tweets[-1].id
+    print(max_id)
+    for i in range(4):
+        timeline_tweets += twitter_v1.home_timeline(tweet_mode="extended",  exclude_replies=True, include_entities=False, count=200, max_id=max_id)
+        max_id = timeline_tweets[-1].id
+        print(i, max_id, len(timeline_tweets))
+
+    
+    print(len(timeline_tweets))
+    return timeline_tweets
+
+
+def twitter_routine():  # sourcery skip: raise-specific-error
+
+    twitter_v1 = get_twitter_vi()
+
+    # t  = get_full_text(1627275021961011201, twitter_v1)
+    # print(t)
+    # exit()
+
+
 
     # get the list of previous tweets from the text file
     with open("social/tweet_ids.txt", "r") as f:
         previous_tweets = f.read().splitlines()    
 
-    tweets_info = twitter_v1.mentions_timeline( count=count)
+    # get the list of previous tweets from the text file
+    with open("social/bad_users.txt", "r") as f:
+        bad_users = f.read().splitlines() 
+    print("bad_users", bad_users)
 
-    for i, tweet in enumerate(tweets_info , start=1):
 
-        if str(tweet.id) in previous_tweets:
-            continue
+    # timeline = twitter_v1.home_timeline( )
 
-        text = tweet.text
-        
-        if is_bad(text):
-            
-            continue
+    # for status in tweepy.Cursor(twitter_v1.home_timeline, "Tweepy",
+    #     count=200).items():
+    #     print(status.id)
+
+    # timeline_tweets 
+    # # timeline_tweets = fetch_timeline_tweets(twitter_v1)
+    # print(f"timeline_tweets: {len(timeline_tweets)}")
+
+
+    if mode == "twittermentions":
+        tweets = twitter_v1.mentions_timeline(tweet_mode="extended", count=200 )
+
+    elif mode == "twittertimeline":
+        tweets = test_tweets.test_tweets if test else fetch_timeline_tweets(twitter_v1)
+
+    else:
+        raise Exception("invalid mode")
+
+    
+    tweets = [x for x in tweets if x.id_str not in previous_tweets]
+    tweets = [x for x in tweets if not is_bad(x.full_text) ]
+    tweets = [x for x in tweets if x.favorite_count!=0 ]
+    tweets = [x for x in tweets if str(x.user.id) not in bad_users ]
+    tweets.sort(key=lambda x: x.retweet_count + x.favorite_count, reverse=True)
+
+
+    for i, tweet in enumerate(tweets, start=1):
+        # print(tweet)
+
+        # id = tweet.id
+        # if id in previous_tweets:
+        #     continue
+        text = tweet.full_text.replace("\n", " ") 
+        # if is_bad(text):
+        #     continue
+
+        retweet_count = tweet.retweet_count
+        favorite_count = tweet.favorite_count
+        # if retweet_count > 150 or favorite_count > 150:
+        screen_name = tweet.user.screen_name
+        user_id = tweet.user.id
+        followers_count = tweet.user.followers_count
+        following_count = tweet.user.friends_count
+        followers_minus_following = followers_count - following_count
+        possibly_sensitive = tweet.possibly_sensitive if hasattr(tweet, "possibly_sensitive") else False
+        log = f"{i}: {screen_name} | {text} | (retweets: {retweet_count}, favorites: {favorite_count}, followers: {followers_minus_following}, user_id: {user_id}"
+        if possibly_sensitive:
+            log += " (possibly sensitive)!!!"
+        print(log)
+                # print(json)
+
+
+    # for i, tweet in enumerate(mentions , start=1):
+
+        # if str(tweet.id) in previous_tweets:
+        #     continue
+
+        # text = tweet.text
+
+        # if is_bad(text):
+
+            # continue
 
         username = tweet.user.screen_name
 
-        print(f"{i}: <@{username}> '{text}'")
+        # print(f"{i}: <@{username}> '{text}'")
 
         test_message, language = get_test_message_and_language(text)
 
@@ -344,26 +456,31 @@ def twitter_routine():
             approved = input("approve? (y)es / (n)o / i(gnore this tweet always)) ")
 
             if approved.lower() == "y":
-                
+
                 # post the reply to twitter
                 twitter_v1.update_status(reply, in_reply_to_status_id =tweet.id)
+                tweet.favorite()
 
             if approved.lower() in ["i", "y"]:
 
+                print('opening tweet_ids to save the id of the tweet')
+
                 # save the ids of the tweet to a text file
-                with open("tweet_ids.txt", "a") as f:
+                with open("social/tweet_ids.txt", "a") as f:
+                    print(f"writing {tweet.id} to tweet_ids.txt")
 
                     f.write(str(tweet.id) + "\n")
 
 
-def main():
-    print(platform)
 
-    if platform == "twitter":
+def main():
+    print(mode)
+
+    if mode in ["twittermentions", "twittertimeline"]:
         twitter_routine()
-    elif platform == "reddit":
+    elif mode == "reddit":
         reddit_routine()
-    elif platform == "insta":
+    elif mode == "insta":
         insta_routine()
 
 
