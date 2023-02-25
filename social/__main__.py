@@ -20,7 +20,7 @@ print("Running social.py")
 parser = argparse.ArgumentParser()
 parser.add_argument('--test', "-t", action=argparse.BooleanOptionalAction)
 # parser.add_argument("-c", "--count", help="number of tweets to fetch", type=int, default=25)
-parser.add_argument("-m", "--mode", help="which routine to run", type=str, choices=["twittermentions", "twittertimeline", "reddit", "insta"], default="twittermention")
+parser.add_argument("-m", "--mode", help="which routine to run", type=str, choices=["twittermentions", "twittertimeline", "reddit", "insta"], default="twittermentions")
 
 args = parser.parse_args()
 test = args.test
@@ -46,22 +46,23 @@ emotion = input("what emotion do you want the bot to have? (default is 'funny')"
 with open("social/last_context.txt", "r") as f:
     last_context = f.read()
 
+# will ignore any input containing these words
+# get the last context from the text file
+with open("social/bads.txt", "r") as f:
+    bads = f.read()
+print("bads: ", bads)
+
 context = input(f"any additional context you wish to give the bot about itself? (for example, '{last_context}')") or ""
 
 if context != "":
 
     # save the ids of the tweet to a text file
-    with open("last_context.txt", "w") as f:
+    with open("social/last_context.txt", "w") as f:
 
         f.write(context)
 
 base_prompt = f"respond to this {mode} comment as if you are {character}. Your response should use current slang and should be {emotion}."
 twitter_prompts = [base_prompt]
-
-# will ignore any input containing these words
-bads = os.environ.get("BADS").split(",")
-print("bads: ", bads)
-
 
 def build_openai_response(text: str, prompt: str):
 
@@ -453,23 +454,26 @@ def twitter_routine():  # sourcery skip: raise-specific-error
         if not test:
 
             # ask for approval
-            approved = input("approve? (y)es / (n)o / i(gnore this tweet always)) ")
+            input = input("approve? (y)es / (n)o / i(gnore this tweet always)) ").lower()
 
-            if approved.lower() == "y":
+            if input == "y":
 
                 # post the reply to twitter
                 twitter_v1.update_status(reply, in_reply_to_status_id =tweet.id)
                 tweet.favorite()
 
-            if approved.lower() in ["i", "y"]:
+            if input in ["i", "y"]:
 
                 print('opening tweet_ids to save the id of the tweet')
 
                 # save the ids of the tweet to a text file
                 with open("social/tweet_ids.txt", "a") as f:
-                    print(f"writing {tweet.id} to tweet_ids.txt")
+                    # print(f"writing {tweet.id} to tweet_ids.txt")
 
                     f.write(str(tweet.id) + "\n")
+
+            elif input == 'q':
+                exit()
 
 
 

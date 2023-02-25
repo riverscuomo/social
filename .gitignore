@@ -2,6 +2,7 @@
 /social/tweet_ids.txt
 /social/last_context.txt
 /social/bad_users.txt
+/social/bads.txt
 
 *.json
 
