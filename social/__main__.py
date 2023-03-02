@@ -176,135 +176,6 @@ def remove_continuation_of_previous_tweet(reply):
     return reply.replace(bad, "")
 
 
-def reddit_routine():
-
-    REDDIT_CLIENT_ID =os.environ.get("REDDIT_CLIENT_ID")
-    REDDIT_SECRET =os.environ.get("REDDIT_SECRET")
-    REDDIT_PASSWORD =os.environ.get("REDDIT_PASSWORD")
-    REDDIT_USERNAME =os.environ.get("REDDIT_USERNAME")
-
-    reddit = praw.Reddit(
-    client_id=REDDIT_CLIENT_ID,
-    client_secret=REDDIT_SECRET,
-    user_agent="riverbot",
-    password=REDDIT_PASSWORD,
-    username = REDDIT_USERNAME
-    )
-    # assume you have a praw.Reddit instance bound to variable `reddit`
-    subreddit = reddit.subreddit("weezer")
-
-    # assume you have a Subreddit instance bound to variable `subreddit`
-    for i, submission in enumerate(subreddit.hot(limit=count), start=1):
-        print("\n")
-        print(i, submission.title, submission.score, submission.id)
-
-        # https://praw.readthedocs.io/en/stable/code_overview/models/submission.html
-
-        title = submission.title
-        text = submission.selftext
-
-        # print(title, text)
-                
-        # submission = reddit.submission("39zje0")
-        submission.comment_sort = "new"
-        top_level_comments = list(submission.comments)
-        # print(top_level_comments)
-
-        context = ""
-        for comment in top_level_comments[:3]:
-            # print(vars(comment))
-            body = comment.body.replace("\n", "")
-            context += body + "\n"
-
-            test_message, language = get_test_message_and_language(context)
-
-            reply = build_openai_response(context, base_prompt)   
-            reply = finalize_response(reply, language)
-        
-
-        print(context)
-        print("------------------->", end=" ")
-        print(reply)
-
-
-def insta_routine():
-    from instagrapi import Client
-    from instagrapi.types import StoryMention, StoryMedia, StoryLink, StoryHashtag
-
-    INSTA_USERNAME = os.environ.get("INSTA_USERNAME")
-    INSTA_PASSWORD = os.environ.get("INSTA_PASSWORD")
-    INSTA_PK = os.environ.get("INSTA_PK")
-
-    client = Client()
-    client.login(INSTA_USERNAME, INSTA_PASSWORD)
-
-    medias = client.user_medias(INSTA_PK, amount=count)
-    # print(medias)
-    for i, media in enumerate(medias):
-
-        """
-        I could get all the comments.
-        Then get all the users for each comment.
-        Then sort by is_verified or by follower count.
-        """
-        
-        comments=client.media_comments( media.pk, amount=1)
-        # print([x.text for x in comments])
-
-        first_comment = comments[0]
-
-        t = first_comment.text
-        u = first_comment.user.dict()["username"]
-
-        print(f"({i}): <@{u} > '{t}'")
-
-        test_message, language = get_test_message_and_language(t)
-
-        reply = None
-
-        reply = build_openai_response(t, base_prompt)   
-        reply = finalize_response(reply, language)
-        reply = f"@{u} {reply}"
-        print(f"'{reply}'")
-        print("\n")        
-
-        
-
-        if not test:
-
-            # ask for approval
-            approved = input("approve? (y/n) ")
-
-            if approved.lower() == "y":
-                
-                try:
-                    # post the reply to insta
-                    client.media_comment(media.pk, reply)
-                except Exception as e:
-                    print(e)
-
-# def get_full_text(id, twitter_v1):  
-#     """ get the full text of a tweet that has been truncated for length """
-
-#     # get the full text of the tweet
-#     tweet = twitter_v1.get_status(id, tweet_mode="extended")
-#     text = tweet.full_text
-
-#     # # remove the url
-#     # text = text.split("https://")[0]
-
-#     # # remove the username
-#     # text = text.split("@")[0]
-
-#     # # remove the hashtag
-#     # text = text.split("#")[0]
-
-#     # # remove the newline
-#     # text = text.replace("\n", "")
-
-#     return text
-
-
 def get_twitter_vi():
     TWITTER_APP_KEY = os.environ.get("TWITTER_APP_KEY")
     TWITTER_APP_SECRET = os.environ.get("TWITTER_APP_SECRET")
@@ -340,7 +211,7 @@ def fetch_timeline_tweets(twitter_v1):
     return timeline_tweets
 
 
-def twitter_routine():  # sourcery skip: raise-specific-error
+def twitter_routine(mode=mode):  # sourcery skip: raise-specific-error
 
     twitter_v1 = get_twitter_vi()
 
@@ -373,9 +244,11 @@ def twitter_routine():  # sourcery skip: raise-specific-error
 
     if mode == "twittermentions":
         tweets = twitter_v1.mentions_timeline(tweet_mode="extended", count=200 )
+        tweets.sort(key=lambda x: x.user.followers_count, reverse=True)
 
     elif mode == "twittertimeline":
         tweets = test_tweets.test_tweets if test else fetch_timeline_tweets(twitter_v1)
+        tweets.sort(key=lambda x: x.retweet_count + x.favorite_count, reverse=True)
 
     else:
         raise Exception("invalid mode")
@@ -385,7 +258,7 @@ def twitter_routine():  # sourcery skip: raise-specific-error
     tweets = [x for x in tweets if not is_bad(x.full_text) ]
     tweets = [x for x in tweets if x.favorite_count!=0 ]
     tweets = [x for x in tweets if str(x.user.id) not in bad_users ]
-    tweets.sort(key=lambda x: x.retweet_count + x.favorite_count, reverse=True)
+    
 
 
     for i, tweet in enumerate(tweets, start=1):
@@ -454,15 +327,15 @@ def twitter_routine():  # sourcery skip: raise-specific-error
         if not test:
 
             # ask for approval
-            input = input("approve? (y)es / (n)o / i(gnore this tweet always)) ").lower()
+            i = input("approve? (y)es / (n)o / i(gnore this tweet always)) ").lower()
 
-            if input == "y":
+            if i == "y":
 
                 # post the reply to twitter
                 twitter_v1.update_status(reply, in_reply_to_status_id =tweet.id)
                 tweet.favorite()
 
-            if input in ["i", "y"]:
+            if i in ["i", "y"]:
 
                 print('opening tweet_ids to save the id of the tweet')
 
@@ -472,8 +345,11 @@ def twitter_routine():  # sourcery skip: raise-specific-error
 
                     f.write(str(tweet.id) + "\n")
 
-            elif input == 'q':
+            elif i == 'q':
                 exit()
+
+            elif i == "tt":
+                twitter_routine(mode="twittertimeline")
 
 
 
@@ -491,3 +367,24 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# def get_full_text(id, twitter_v1):  
+#     """ get the full text of a tweet that has been truncated for length """
+
+#     # get the full text of the tweet
+#     tweet = twitter_v1.get_status(id, tweet_mode="extended")
+#     text = tweet.full_text
+
+#     # # remove the url
+#     # text = text.split("https://")[0]
+
+#     # # remove the username
+#     # text = text.split("@")[0]
+
+#     # # remove the hashtag
+#     # text = text.split("#")[0]
+
+#     # # remove the newline
+#     # text = text.replace("\n", "")
+
+#     return text
