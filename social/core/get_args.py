@@ -12,7 +12,7 @@ def get_args():
     args = parser.parse_args()
     test = args.test
     # count = args.count
-    mode = args.mode
+    # mode = args.mode
 
     if test:
         print("TESTING MODE")
@@ -21,5 +21,3 @@ def get_args():
         print("LIVE MODE")
 
     return args
-
-args = get_args()

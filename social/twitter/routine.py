@@ -1,8 +1,8 @@
-from social.core.args import args
+# from social.core.args import args
 from social.twitter import helpers
-from social.twitter.twitter_v1_service import get_twitter_vi
+from social.twitter.service_v1 import get_twitter_vi
 from social.twitter import timeline
-from social.core import response, config, prompts
+from social.core import response
 from social.data import test_tweets
 # environ must be loaded before rivertils
 from dotenv import load_dotenv
@@ -10,7 +10,9 @@ load_dotenv(override=True)
 from rivertils import rivertils
 
 import random
-def routine(mode=args.mode):  # sourcery skip: raise-specific-error
+def routine(args, prompts, last_context):  
+    """ Both twittermentions and twittertimeline are handled here. """
+    
 
     twitter_v1 = get_twitter_vi()
 
@@ -41,11 +43,11 @@ def routine(mode=args.mode):  # sourcery skip: raise-specific-error
     # print(f"timeline_tweets: {len(timeline_tweets)}")
 
 
-    if mode == "twittermentions":
-        tweets = twitter_v1.mentions_timeline(tweet_mode="extended", count=200 )
+    if args.mode == "twittermentions":
+        tweets = twitter_v1.mentions_timeline(tweet_args="extended", count=200 )
         tweets.sort(key=lambda x: x.user.followers_count, reverse=True)
 
-    elif mode == "twittertimeline":
+    elif args.mode == "twittertimeline":
         tweets = test_tweets.test_tweets if args.test else timeline.fetch_timeline_tweets(twitter_v1)
         tweets.sort(key=lambda x: x.retweet_count + x.favorite_count, reverse=True)
 
@@ -109,7 +111,7 @@ def routine(mode=args.mode):  # sourcery skip: raise-specific-error
 
         # every 4 items, add any additional context to the prompt
         if i % 4 == 0:
-            prompt += f" Your response could mention the fact that {config.last_context}" 
+            prompt += f" Your response could mention the fact that {last_context}" 
             # print(prompt)
 
         reply = response.build_openai_response(text, prompt)   

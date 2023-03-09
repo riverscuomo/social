@@ -3,30 +3,27 @@ from datetime import datetime, timezone
 import social.data.test_tweets as test_tweets
 from dateutil import parser  #  pip install python-dateutil --upgrade
 import os
-from insta import insta
-from twitter import routine as twitter
-from reddit import reddit
-from social.core import config
-
-
-
+from social.insta import insta
+from social.twitter import routine as twitter
+from social.reddit import reddit
+from social.core import config, get_prompts, get_args
 import praw
 
 # environ must be loaded before rivertils
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-
-import random
 print("Running social.py")
-from social.core.args import args
-
-
 
 
 def main():
+
+    args = get_args.get_args()
+    last_context, bads = config.config()    
+    prompts = get_prompts.get_prompts(last_context, args)
+
     if args.mode in ["twittermentions", "twittertimeline"]:
-        twitter.routine(args.mode)
+        twitter.routine(args, prompts, last_context)
     elif args.mode == "reddit":
         reddit.reddit_routine()
     elif args.mode == "insta":
@@ -34,5 +31,7 @@ def main():
 
 
 if __name__ == "__main__":
+
+    
     main()
 

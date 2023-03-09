@@ -1,10 +1,10 @@
 from social.core import config
-from social.core.args import args
+# from social.core.args import args
 
-def get_prompts():
+def get_prompts(last_context, args):
     character = input("which character do you want to use? (default is 'Rivers Cuomo from Weezer')") or "Rivers Cuomo from Weezer"
     emotion = input("what emotion do you want the bot to have? (default is 'funny')") or "funny"
-    context = input(f"any additional context you wish to give the bot about itself? (for example, '{config.last_context}')") or ""
+    context = input(f"any additional context you wish to give the bot about itself? (for example, '{last_context}')") or ""
     if context != "":
         config.save_context(context)
 
@@ -19,4 +19,5 @@ def get_prompts():
         ]
     return prompts
 
-prompts = get_prompts()
+# prompts = get_prompts()
+

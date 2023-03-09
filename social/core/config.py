@@ -1,4 +1,4 @@
-def get_config():
+def config():
     """ return the last context and the bads from text files """
 
     # get the last context from the text file
@@ -17,4 +17,5 @@ def save_context(context: str):
     with open("social/last_context.txt", "w") as f:
         f.write(context)
 
-last_context, bads = get_config()
+# last_context, bads = get_config()
+
