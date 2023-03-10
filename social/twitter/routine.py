@@ -10,7 +10,7 @@ load_dotenv(override=True)
 from rivertils import rivertils
 
 import random
-def routine(args, prompts, last_context):  
+def routine(args, prompts, last_context, bads):  
     """ Both twittermentions and twittertimeline are handled here. """
     
 
@@ -44,7 +44,7 @@ def routine(args, prompts, last_context):
 
 
     if args.mode == "twittermentions":
-        tweets = twitter_v1.mentions_timeline(tweet_args="extended", count=200 )
+        tweets = twitter_v1.mentions_timeline(tweet_mode="extended", count=200 )
         tweets.sort(key=lambda x: x.user.followers_count, reverse=True)
 
     elif args.mode == "twittertimeline":
@@ -56,7 +56,7 @@ def routine(args, prompts, last_context):
 
     
     tweets = [x for x in tweets if x.id_str not in previous_tweets]
-    tweets = [x for x in tweets if not helpers.is_bad(x.full_text) ]
+    tweets = [x for x in tweets if not helpers.is_bad(x.full_text, bads) ]
     tweets = [x for x in tweets if x.favorite_count!=0 ]
     tweets = [x for x in tweets if str(x.user.id) not in bad_users ]
     
@@ -107,7 +107,7 @@ def routine(args, prompts, last_context):
 
         reply = None
 
-        prompt = random.choice(prompts.prompts)
+        prompt = random.choice(prompts)
 
         # every 4 items, add any additional context to the prompt
         if i % 4 == 0:
@@ -150,5 +150,6 @@ def routine(args, prompts, last_context):
                 exit()
 
             elif i == "tt":
-                routine(mode="twittertimeline")
+                args.mode="twittertimeline"
+                routine(args, prompts, last_context, bads)
 

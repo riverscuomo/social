@@ -1,7 +1,7 @@
-from social.core import config
 
-def is_bad(test_tweet):
-    if b := next((b for b in config.bads if b in test_tweet.lower()), None):
+
+def is_bad(test_tweet,bads):
+    if b := next((b for b in bads if b in test_tweet.lower()), None):
         print("bad tweet: ", b, test_tweet)
 
     return 
