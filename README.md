@@ -1,6 +1,6 @@
 # Social [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 
-A python package that uses OpenAI to generate a response to a social media mention.
+A python package which uses OpenAI to help me respond more quickly, easily, and awesomely to social media mentions.
 
 I'm currently just using this for Twitter. Insta replies as a new comment on the post. Reddit works too I think.
 
