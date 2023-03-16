@@ -10,6 +10,7 @@ load_dotenv(override=True)
 from rivertils import rivertils
 
 import random
+
 def routine(args, prompts, last_context, bads):  
     """ Both twittermentions and twittertimeline are handled here. """
     

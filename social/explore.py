@@ -51,10 +51,10 @@ def main():
     # exit()
 
 
-    user= twitter_v1.get_user(screen_name="riverscuomo")
+    # user= twitter_v1.get_user(screen_name="riverscuomo")
     # friends = user.friends(count=100)
 
-    f = friends.fetch(user)
+    f = friends.fetch(twitter_v1, "riverscuomo")
 
     # filter friends where muting is True
     f = [x for x in f if x.muting == True]
