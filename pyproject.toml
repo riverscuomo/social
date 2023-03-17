@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 tweepy = ">=4.12.1"
-openai = ">=0.26.1"
+openai = ">=0.27.2"
 rivertils = ">=0.1.7"
 instagrapi = ">=1.16.30"
 praw = ">=7.6.1"

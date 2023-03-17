@@ -22,8 +22,10 @@ def main():
     last_context, bads = config.config()    
     prompts = get_prompts.get_prompts(last_context, args)
 
-    if args.mode in ["twittermentions", "twittertimeline"]:
+    if args.mode in ["twittermentions"]:
         twitter.routine(args, prompts, last_context,bads)
+    elif args.mode == "twittertimeline":
+        twitter.routine(args, prompts, None,bads)
     elif args.mode == "reddit":
         reddit.reddit_routine()
     elif args.mode == "insta":

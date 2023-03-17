@@ -2,7 +2,7 @@
 from social.twitter import helpers
 from social.twitter.service_v1 import get_twitter_vi
 from social.twitter import timeline
-from social.core import response
+from social.core import fetch_response
 from social.data import test_tweets
 # environ must be loaded before rivertils
 from dotenv import load_dotenv
@@ -111,12 +111,12 @@ def routine(args, prompts, last_context, bads):
         prompt = random.choice(prompts)
 
         # every 4 items, add any additional context to the prompt
-        if i % 4 == 0:
+        if i % 4 == 0  and last_context:
             prompt += f" Your response could mention the fact that {last_context}" 
             # print(prompt)
 
-        reply = response.build_openai_response(text, prompt)   
-        reply = response.finalize_response(reply, language)
+        reply = fetch_response.build_openai_response(text, prompt)   
+        reply = fetch_response.finalize_response(reply, language)
         # reply = "test"
         reply = f"@{username} {reply}"
         if len(reply) > 280:
