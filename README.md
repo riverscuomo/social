@@ -1,6 +1,6 @@
 # Social [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 
-A python/gpt-3 package which helps me respond more quickly, easily, and awesomely to social media mentions.
+A python/openAi package which helps me have a quicker, easier, and more awesome social media presence.
 
 I'm currently just using this for Twitter. Insta replies as a new comment on the post. Reddit works too I think.
 
@@ -18,6 +18,7 @@ You can specify custom variables to include using a `.env` file.  Alternatively,
 
 ```
 OPENAI_API_KEY=x
+OPENAI_MODEL=gpt-4 OR whatever (defaults to text-davinci-003)
 
 INSTA_USERNAME=x
 INSTA_PASSWORD=x
