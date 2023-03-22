@@ -8,7 +8,7 @@ def config():
     # will ignore any input containing these words
     # get the last context from the text file
     with open("social/bads.txt", "r") as f:
-        bads = f.read()
+        bads = f.readlines()
     print("bads: ", bads)
     return last_context, bads
 

@@ -2,7 +2,7 @@
 
 def is_bad(test_tweet,bads):
     if b := next((b for b in bads if b in test_tweet.lower()), None):
-        print("bad tweet: ", b, test_tweet)
+        print(f"is_bad: '{b}' in '{test_tweet}'")
 
     return 
 
